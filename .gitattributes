@@ -1,0 +1,11 @@
+# Normalise line endings so the same files do not show as modified when the
+# repo is checked out on Windows and on a Linux deploy host.
+* text=auto eol=lf
+
+# Files git must treat as binary
+*.svg binary
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff binary
+*.woff2 binary

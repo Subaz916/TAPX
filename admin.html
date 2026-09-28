@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#09090B" />
+<meta name="color-scheme" content="dark" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Admin - TAPX</title>
+<link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/admin.css" />
+</head>
+
+<body>
+<div class="app">
+
+  <!-- ============================================================== HEADER -->
+  <header class="admin-header">
+    <div class="wrap admin-header__inner">
+      <div class="admin-brand" data-brand>
+        <span class="brand__mark">T</span>
+        <strong style="letter-spacing:.14em">TAPX</strong>
+        <span class="admin-badge">Admin</span>
+      </div>
+      <a class="btn btn--small btn--ghost" href="index.html" id="admin-back">Back to game</a>
+    </div>
+  </header>
+
+  <!-- ================================================================ TABS -->
+  <nav class="admin-tabs" aria-label="Admin sections">
+    <div class="wrap admin-tabs__inner">
+      <button class="admin-tab is-active" type="button" data-admin-nav="overview">Overview</button>
+      <button class="admin-tab" type="button" data-admin-nav="users">Users</button>
+      <button class="admin-tab" type="button" data-admin-nav="game">Game settings</button>
+      <button class="admin-tab" type="button" data-admin-nav="ads">Ads</button>
+      <button class="admin-tab" type="button" data-admin-nav="announcements">Announcements</button>
+      <button class="admin-tab" type="button" data-admin-nav="system">System</button>
+    </div>
+  </nav>
+
+  <main class="wrap admin-main">
+
+    <!-- ======================================================== OVERVIEW -->
+    <section class="admin-view" data-view="overview">
+      <div class="section-head">
+        <h2>Overview</h2>
+        <p>Aggregated from your own database. Nothing here is estimated.</p>
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric"><div class="metric__value" id="ov-users">-</div><div class="metric__label">Registered users</div></div>
+        <div class="metric"><div class="metric__value" id="ov-users-24h">-</div><div class="metric__label">New signups (24h)</div></div>
+        <div class="metric metric--primary"><div class="metric__value" id="ov-dau-24h">-</div><div class="metric__label">Active today (24h)</div></div>
+        <div class="metric metric--primary"><div class="metric__value" id="ov-dau-7d">-</div><div class="metric__label">Active this week</div></div>
+        <div class="metric metric--accent"><div class="metric__value" id="ov-taps">-</div><div class="metric__label">Total taps</div></div>
+        <div class="metric metric--accent"><div class="metric__value" id="ov-coins">-</div><div class="metric__label">Coins in circulation</div></div>
+        <div class="metric"><div class="metric__value" id="ov-avg-taps">-</div><div class="metric__label">Avg taps / user</div></div>
+        <div class="metric metric--secondary"><div class="metric__value" id="ov-upgrades">-</div><div class="metric__label">Upgrades bought</div></div>
+        <div class="metric metric--secondary"><div class="metric__value" id="ov-milestones">-</div><div class="metric__label">Milestones claimed</div></div>
+        <div class="metric metric--warn"><div class="metric__value" id="ov-daily">-</div><div class="metric__label">Daily claims (24h)</div></div>
+        <div class="metric metric--warn"><div class="metric__value" id="ov-ad-24h">-</div><div class="metric__label">Ad events (24h)</div></div>
+        <div class="metric metric--warn"><div class="metric__value" id="ov-ad-total">-</div><div class="metric__label">Ad events (all time)</div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <p class="panel__title">Application-side ad events</p>
+          <div class="stack" id="ov-ad-by-type" style="gap:6px"></div>
+          <p class="empty-note" style="text-align:left;padding-top:10px">
+            These are local log rows written by the app when a user opens a real,
+            enabled placement. They are <strong>not</strong> impressions and are
+            never sent to the ad network. All network reporting comes from the
+            official network code only.
+          </p>
+        </div>
+
+        <div class="panel">
+          <p class="panel__title">Top players</p>
+          <div class="stack" id="ov-top-players" style="gap:6px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================== USERS -->
+    <section class="admin-view" data-view="users" hidden>
+      <div class="section-head">
+        <h2>Users</h2>
+        <p>Only the fields needed to run the game. Emails are masked by default.</p>
+      </div>
+
+      <div class="panel">
+        <div class="toolbar" style="margin-bottom:12px">
+          <input class="input" type="search" id="user-search" placeholder="Search username, display name or user ID" />
+          <button class="btn btn--small" type="button" id="user-refresh">Refresh</button>
+          <button class="btn btn--small btn--ghost" type="button" id="user-reveal">Reveal emails</button>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table" id="user-table">
+            <thead>
+              <tr>
+                <th>User</th><th>Email</th><th>Taps</th><th>Coins</th><th>Level</th><th>Joined</th><th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="pager" style="margin-top:12px">
+          <button class="btn btn--tiny" type="button" id="user-prev">Previous</button>
+          <span id="user-range">0-0 of 0</span>
+          <button class="btn btn--tiny" type="button" id="user-next">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================== GAME SETTINGS -->
+    <section class="admin-view" data-view="game" hidden>
+      <div class="section-head">
+        <h2>Game settings</h2>
+        <p>Economy, upgrades and milestones. All changes are validated by the database.</p>
+      </div>
+
+      <div class="panel">
+        <p class="panel__title">Economy</p>
+        <form class="form-grid form-grid--2" id="upgrade-form">
+          <input type="hidden" id="up-id" />
+          <div class="field">
+            <label for="up-name">Name</label>
+            <input class="input" id="up-name" type="text" placeholder="Tap Power" maxlength="60" />
+          </div>
+          <div class="field">
+            <label for="up-slug">Slug</label>
+            <input class="input" id="up-slug" type="text" placeholder="tap_power" maxlength="32" />
+          </div>
+          <div class="field span-2">
+            <label for="up-description">Description</label>
+            <input class="input" id="up-description" type="text" placeholder="Every tap is worth 15% more." maxlength="200" />
+          </div>
+          <div class="field">
+            <label for="up-icon">Icon</label>
+            <select class="input" id="up-icon">
+              <option value="bolt">bolt</option>
+              <option value="combo">combo</option>
+              <option value="crit">crit</option>
+              <option value="star">star</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="up-cost">Base cost (coins)</label>
+            <input class="input" id="up-cost" type="number" min="1" step="1" value="100" />
+          </div>
+          <div class="field">
+            <label for="up-growth">Cost growth per level</label>
+            <input class="input" id="up-growth" type="number" min="1.01" step="0.01" value="1.15" />
+          </div>
+          <div class="field">
+            <label for="up-multiplier">Effect multiplier</label>
+            <input class="input" id="up-multiplier" type="number" min="1" step="0.01" value="1.15" />
+          </div>
+          <div class="field">
+            <label for="up-max">Max level</label>
+            <input class="input" id="up-max" type="number" min="1" max="500" step="1" value="20" />
+          </div>
+          <div class="field">
+            <label for="up-order">Sort order</label>
+            <input class="input" id="up-order" type="number" min="0" max="999" step="1" value="0" />
+          </div>
+          <label class="check-inline" style="padding-top:0">
+            <input type="checkbox" id="up-active" checked /> Active
+          </label>
+          <div class="form-actions span-2">
+            <button class="btn btn--primary" type="submit">Save upgrade</button>
+            <button class="btn btn--ghost btn--small" type="button" id="up-reset">Clear form</button>
+          </div>
+        </form>
+
+        <div class="table-wrap" style="margin-top:14px">
+          <table class="table" id="upgrade-table">
+            <thead><tr><th>Upgrade</th><th>Base</th><th>Growth</th><th>Max</th><th>State</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <p class="panel__title">Milestones</p>
+        <form class="form-grid form-grid--2" id="milestone-form">
+          <input type="hidden" id="ms-id" />
+          <div class="field">
+            <label for="ms-name">Name</label>
+            <input class="input" id="ms-name" type="text" placeholder="Thousand Club" maxlength="60" />
+          </div>
+          <div class="field">
+            <label for="ms-taps">Taps required</label>
+            <input class="input" id="ms-taps" type="number" min="1" step="1" value="100" />
+          </div>
+          <div class="field span-2">
+            <label for="ms-description">Description</label>
+            <input class="input" id="ms-description" type="text" maxlength="200" />
+          </div>
+          <div class="field">
+            <label for="ms-coins">Reward (coins)</label>
+            <input class="input" id="ms-coins" type="number" min="0" step="1" value="500" />
+          </div>
+          <div class="field">
+            <label for="ms-order">Sort order</label>
+            <input class="input" id="ms-order" type="number" min="0" max="999" step="1" value="0" />
+          </div>
+          <label class="check-inline" style="padding-top:0">
+            <input type="checkbox" id="ms-active" checked /> Active
+          </label>
+          <div class="form-actions span-2">
+            <button class="btn btn--primary" type="submit">Save milestone</button>
+          </div>
+        </form>
+
+        <div class="table-wrap" style="margin-top:14px">
+          <table class="table" id="milestone-table">
+            <thead><tr><th>Milestone</th><th>Taps</th><th>Reward</th><th>State</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================= ADS -->
+    <section class="admin-view" data-view="ads" hidden>
+      <div class="section-head">
+        <h2>Advertising</h2>
+        <p>Turn ads on, paste the official publisher snippet, and switch placements on or off. No file editing required.</p>
+      </div>
+
+      <div class="policy-note">
+        <h3>Advertising policy reminder</h3>
+        <ul>
+          <li>Only paste the exact code your ad network gave you in your publisher dashboard. TAPX never generates ad code.</li>
+          <li>Ads are visible containers only. There are no hidden iframes, no invisible windows and no auto-refresh loops.</li>
+          <li>No ad is loaded, requested or refreshed on a tap. Tapping the game button never triggers an ad.</li>
+          <li>A saved snippet is rendered exactly once per page load. It is never re-injected, so a refresh cannot double-count an impression.</li>
+          <li>No impressions, clicks or earnings are simulated anywhere in this application.</li>
+          <li>This panel cannot manufacture ad activity. It only stores your own network's code and switches containers on or off.</li>
+          <li>All impressions, clicks and revenue are reported by the network's own code and visible in the network's publisher dashboard.</li>
+        </ul>
+      </div>
+
+      <div class="panel">
+        <p class="panel__title">Master switch</p>
+        <label class="check-inline">
+          <input type="checkbox" id="ads-master" /> Ads enabled on the game page
+        </label>
+        <p class="note">
+          The single switch that turns every placement on or off, instantly,
+          without touching any file. With it off no ad renders anywhere, even if
+          placements and code are saved below.
+        </p>
+      </div>
+
+      <div class="panel">
+        <p class="panel__title">Ad code (official publisher snippet)</p>
+        <p class="note" style="margin-top:0">
+          Pick a placement, paste the <strong>exact</strong> snippet your network
+          gave you in its publisher dashboard, then press <strong>Save code</strong>.
+          The game renders it inside the matching visible container. Nothing runs
+          on a tap and nothing refreshes.
+        </p>
+
+        <div class="form-grid form-grid--2" style="margin-top:12px">
+          <div class="field">
+            <label for="code-slug">Placement</label>
+            <select class="input" id="code-slug"></select>
+          </div>
+          <div class="field">
+            <label for="code-status">Status</label>
+            <p class="empty-note" id="code-status" style="padding:8px 0">No snippet saved.</p>
+          </div>
+          <div class="field span-2">
+            <label for="code-value">Official code (pasted verbatim, never modified)</label>
+            <textarea
+              class="input input--code"
+              id="code-value"
+              rows="7"
+              spellcheck="false"
+              autocomplete="off"
+              placeholder="&lt;script ...&gt; ... &lt;/script&gt;"
+            ></textarea>
+            <p class="note" style="margin-top:6px">
+              <span id="code-count">0</span> / 20000 characters. Snippets using
+              <code>document.write()</code> are rejected: they cannot work when
+              injected after page load and would blank the page. Ask your network
+              for the standard <code>&lt;script&gt;</code> version.
+            </p>
+          </div>
+          <div class="form-actions span-2">
+            <button class="btn btn--primary" type="button" id="code-save">Save code</button>
+            <button class="btn btn--ghost" type="button" id="code-clear">Clear code</button>
+            <button class="btn btn--ghost" type="button" id="code-reload">Reload from server</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <p class="panel__title">Where each container appears</p>
+        <div class="stack" style="gap:10px">
+          <div>
+            <strong style="font-size:.86rem">#ad-top</strong>
+            <p class="empty-note" style="text-align:left;padding:4px 0">Directly under the XP card.</p>
+          </div>
+          <div>
+            <strong style="font-size:.86rem">#ad-stats</strong>
+            <p class="empty-note" style="text-align:left;padding:4px 0">Directly under the stats strip, above the XP bar.</p>
+          </div>
+          <div>
+            <strong style="font-size:.86rem">#ad-between</strong>
+            <p class="empty-note" style="text-align:left;padding:4px 0">Between the daily reward and the tap button.</p>
+          </div>
+          <div>
+            <strong style="font-size:.86rem">#ad-inline</strong>
+            <p class="empty-note" style="text-align:left;padding:4px 0">In-content unit below the tap area.</p>
+          </div>
+          <div>
+            <strong style="font-size:.86rem">#ad-bottom</strong>
+            <p class="empty-note" style="text-align:left;padding:4px 0">Above the bottom navigation.</p>
+          </div>
+          <p class="note">
+            You do not need to edit <code>index.html</code> - the panel above is
+            enough. If a placement is disabled, its container is not rendered at
+            all and the game is unaffected.
+          </p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <p class="panel__title">Placements</p>
+        <form class="form-grid form-grid--2" id="placement-form">
+          <input type="hidden" id="pl-id" />
+          <div class="field">
+            <label for="pl-slug">Slug</label>
+            <input class="input" id="pl-slug" type="text" placeholder="top" maxlength="32" />
+          </div>
+          <div class="field">
+            <label for="pl-label">Label</label>
+            <input class="input" id="pl-label" type="text" placeholder="Sponsored" maxlength="60" />
+          </div>
+          <div class="field">
+            <label for="pl-location">Location (matches a container in index.html)</label>
+            <select class="input" id="pl-location">
+              <option value="top">top</option>
+              <option value="stats">stats</option>
+              <option value="between">between</option>
+              <option value="inline">inline</option>
+              <option value="bottom">bottom</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="pl-order">Sort order</label>
+            <input class="input" id="pl-order" type="number" min="0" max="999" step="1" value="0" />
+          </div>
+          <div class="field span-2">
+            <label for="pl-description">Description</label>
+            <input class="input" id="pl-description" type="text" maxlength="240" />
+          </div>
+          <label class="check-inline" style="padding-top:0">
+            <input type="checkbox" id="pl-enabled" /> Enabled
+          </label>
+          <div class="form-actions span-2">
+            <button class="btn btn--primary" type="submit">Save placement</button>
+          </div>
+        </form>
+
+        <div class="table-wrap" style="margin-top:14px">
+          <table class="table" id="placement-table">
+            <thead><tr><th>Slug</th><th>Label</th><th>Location</th><th>Code</th><th>State</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="form-actions" style="margin-top:12px">
+          <button class="btn btn--ghost btn--small" type="button" id="pl-restore">
+            Restore the 5 default placements
+          </button>
+        </div>
+        <p class="note">
+          The game has exactly five ad containers - <code>top</code>,
+          <code>stats</code>, <code>between</code>, <code>inline</code> and
+          <code>bottom</code> - so one placement per container. If the table is
+          empty, press the button above instead of typing new rows by hand.
+        </p>
+      </div>
+    </section>
+
+    <!-- =================================================== ANNOUNCEMENTS -->
+    <section class="admin-view" data-view="announcements" hidden>
+      <div class="section-head">
+        <h2>Announcements</h2>
+        <p>Shown at the top of the game screen for signed-in players.</p>
+      </div>
+
+      <div class="panel">
+        <p class="panel__title">Create or edit</p>
+        <form class="form-grid" id="announcement-form">
+          <input type="hidden" id="an-id" />
+          <div class="field">
+            <label for="an-title">Title</label>
+            <input class="input" id="an-title" type="text" maxlength="80" placeholder="Double weekend" />
+          </div>
+          <div class="field">
+            <label for="an-message">Message</label>
+            <textarea class="input" id="an-message" maxlength="500" placeholder="Tell your players what changed."></textarea>
+          </div>
+          <label class="check-inline" style="padding-top:0">
+            <input type="checkbox" id="an-active" checked /> Published
+          </label>
+          <div class="form-actions">
+            <button class="btn btn--primary" type="submit">Save announcement</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="panel">
+        <div class="table-wrap">
+          <table class="table" id="announcement-table">
+            <thead><tr><th>Announcement</th><th>State</th><th>Created</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================== SYSTEM -->
+    <section class="admin-view" data-view="system" hidden>
+      <div class="section-head">
+        <h2>System</h2>
+        <p>App identity, maintenance mode and the daily reward table.</p>
+      </div>
+
+      <div class="panel">
+        <p class="panel__title">App settings</p>
+        <form class="form-grid form-grid--2" id="settings-form">
+          <div class="field">
+            <label for="set-app-name">App name</label>
+            <input class="input" id="set-app-name" type="text" maxlength="40" />
+          </div>
+          <div class="field">
+            <label for="set-tagline">Tagline</label>
+            <input class="input" id="set-tagline" type="text" maxlength="120" />
+          </div>
+          <div class="field">
+            <label for="set-support-email">Support email</label>
+            <input class="input" id="set-support-email" type="email" maxlength="120" />
+          </div>
+          <div class="field">
+            <label for="set-privacy-url">Privacy URL</label>
+            <input class="input" id="set-privacy-url" type="text" maxlength="200" />
+          </div>
+          <div class="field">
+            <label for="set-terms-url">Terms URL</label>
+            <input class="input" id="set-terms-url" type="text" maxlength="200" />
+          </div>
+          <div class="field">
+            <label for="set-tap-value">Base coins per tap</label>
+            <input class="input" id="set-tap-value" type="number" min="1" max="1000" step="1" />
+          </div>
+          <div class="field span-2">
+            <label for="set-daily-rewards">Daily reward table (comma separated, day 1 first)</label>
+            <input class="input" id="set-daily-rewards" type="text" placeholder="100, 150, 250, 400, 600, 800, 1200" />
+            <button class="btn btn--tiny btn--ghost" type="button" id="set-daily-reset" style="margin-top:8px;align-self:flex-start">
+              Reset to default table
+            </button>
+          </div>
+          <label class="check-inline">
+            <input type="checkbox" id="set-maintenance" /> Maintenance mode
+          </label>
+          <div class="form-actions span-2">
+            <button class="btn btn--primary" type="submit">Save settings</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="policy-note">
+        <h3>Security notes</h3>
+        <ul>
+          <li>Admin access is decided by the <code>admin_users</code> table and Row Level Security, verified on the server with <code>is_admin()</code>. There is no email check and no client-side flag.</li>
+          <li>Every privileged operation runs inside a <code>SECURITY DEFINER</code> function that calls <code>require_admin()</code> first.</li>
+          <li>The Supabase <code>service_role</code> key is never used by this frontend and must never be added to any file in this project.</li>
+          <li>Adsterra private credentials are never used by this frontend.</li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============================================== SHEET: USER DETAIL -->
+<div class="sheet" id="sheet-user-detail" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="User details">
+  <div class="sheet__backdrop" data-sheet-close="sheet-user-detail"></div>
+  <div class="sheet__panel">
+    <div class="sheet__grip"></div>
+    <div class="sheet__head">
+      <div>
+        <h2 class="sheet__title">User</h2>
+        <p class="sheet__sub">Only data required to run and support the game.</p>
+      </div>
+      <button class="icon-btn" type="button" data-sheet-close="sheet-user-detail" aria-label="Close">✕</button>
+    </div>
+    <div class="sheet__body">
+      <div class="stack" style="gap:6px" id="user-detail-body"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="js/admin.js"></script>
+</body>
+</html>

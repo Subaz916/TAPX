@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
+<meta name="theme-color" content="#09090B" />
+<meta name="color-scheme" content="dark" />
+<meta name="description" content="TAPX - a fast tapping game. Tap, build combos, upgrade your tap power and climb the leaderboard." />
+<title>TAPX - Tap game</title>
+
+<link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
+<link rel="apple-touch-icon" href="assets/icons/icon-192.svg" />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+<div class="app">
+
+  <!-- ============================================================== HEADER -->
+  <header class="app-header">
+    <div class="wrap app-header__inner">
+      <a class="brand" href="index.html">
+        <span class="brand__mark">T</span>
+        <span data-brand>TAPX</span>
+      </a>
+
+      <div class="spacer"></div>
+
+      <span class="chip chip--user" id="header-user-name">@player</span>
+      <span class="chip chip--coins">
+        <span class="chip__icon">◎</span>
+        <span id="header-coins">0</span>
+      </span>
+      <span class="chip chip--level">
+        <span class="chip__icon">★</span>
+        <span id="level-value">1</span>
+      </span>
+      <button class="icon-btn" type="button" data-sheet-open="sheet-settings" aria-label="Settings">
+        <span aria-hidden="true">⚙</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============================================================== BOOT -->
+  <section class="boot wrap" id="boot-screen">
+    <div class="boot__mark">T</div>
+    <p class="text-dim">Loading your progress...</p>
+  </section>
+
+  <!-- ============================================================= FATAL -->
+  <section class="boot wrap" id="fatal-error" hidden>
+    <div class="fatal">
+      <h2>Something went wrong</h2>
+      <p data-fatal-message></p>
+      <div class="toolbar" style="justify-content:center">
+        <button class="btn btn--small" type="button" onclick="window.location.reload()">Reload</button>
+        <a class="btn btn--small btn--ghost" href="login.html">Sign in</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================== GAME -->
+  <main class="wrap stack" id="game-screen" hidden>
+
+    <p class="banner banner--maintenance" id="maintenance-banner" hidden></p>
+
+    <!-- Announcements -->
+    <div class="announcements" id="announcement-list"></div>
+
+    <!-- Network status -->
+    <div id="net-badge" hidden><span></span></div>
+
+    <!-- Stats strip -->
+    <section class="stat-strip" aria-label="Your stats">
+      <div class="stat stat--coins">
+        <span class="stat__value" id="coin-balance">0</span>
+        <span class="stat__label">Coins</span>
+      </div>
+      <div class="stat stat--taps">
+        <span class="stat__value" id="total-taps">0</span>
+        <span class="stat__label">Taps</span>
+      </div>
+      <div class="stat stat--level">
+        <span class="stat__value" id="level-value-2">1</span>
+        <span class="stat__label">Level</span>
+      </div>
+      <div class="stat stat--combo">
+        <span class="stat__value" id="combo-value">-</span>
+        <span class="stat__label">Combo</span>
+      </div>
+    </section>
+
+    <!-- ==================================================== AD: STATS -->
+    <!-- Ad code for this container is normally pasted in Admin > Ads. -->
+    <div class="ad-slot" id="ad-stats" hidden aria-label="Advertisement">
+      <span class="ad-slot__label">Sponsored</span>
+    </div>
+    <!-- END AD: STATS -->
+
+    <!-- XP -->
+    <section class="card card--tight xp" aria-label="Experience">
+      <div class="xp__head">
+        <span>Level <span id="xp-level">1</span></span>
+        <span id="xp-label">0 / 125 XP</span>
+      </div>
+      <div class="progress" id="xp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-tone="cool">
+        <span class="progress__fill"></span>
+      </div>
+    </section>
+
+    <!-- ====================================================== AD: TOP -->
+    <!-- Ad code for this container is normally pasted in Admin > Ads, so you do
+         not need to edit this file. Pasting it here directly still works as a
+         fallback. Either way it is VISIBLE, it loads on page load only, and
+         nothing here ever runs on a tap. -->
+    <div class="ad-slot" id="ad-top" hidden aria-label="Advertisement">
+      <span class="ad-slot__label">Sponsored</span>
+    </div>
+    <!-- END AD: TOP -->
+
+    <!-- Daily reward -->
+    <section class="card daily" id="daily-card">
+      <div class="daily__icon" aria-hidden="true">🎁</div>
+      <div class="daily__body">
+        <div class="daily__amount" id="daily-amount">0</div>
+        <div class="daily__label" id="daily-streak-text">Daily reward</div>
+        <div class="streak-dots" id="daily-dots" aria-hidden="true"></div>
+      </div>
+      <button class="btn btn--accent" type="button" id="daily-claim" data-ready="false">
+        <span data-claim-label>CLAIM</span>
+      </button>
+    </section>
+
+    <!-- Tap stage -->
+    <section class="tap-stage">
+      <button class="tap-button" id="tap-button" type="button" aria-label="Tap to earn coins">
+        <span class="tap-button__inner">
+          <span class="tap-button__title" id="tap-button-label">TAP</span>
+          <span class="tap-button__value" id="tap-value">+1</span>
+        </span>
+      </button>
+
+      <div class="combo-meter" id="combo-meter" data-active="false" aria-hidden="true">
+        <span class="combo-meter__fill"></span>
+      </div>
+
+      <p class="tap-hint">Tap fast to keep the combo alive. Progress saves automatically.</p>
+    </section>
+
+    <!-- =================================================== AD: BETWEEN -->
+    <!-- Ad code for this container is normally pasted in Admin > Ads. -->
+    <div class="ad-slot" id="ad-between" hidden aria-label="Advertisement">
+      <span class="ad-slot__label">Sponsored</span>
+    </div>
+    <!-- END AD: BETWEEN -->
+
+    <p class="note">
+      Coins are a game score only. TAPX does not pay real money and does not
+      convert coins into cash.
+    </p>
+
+    <!-- =================================================== AD: INLINE -->
+    <!-- Ad code for this container is normally pasted in Admin > Ads. -->
+    <div class="ad-slot" id="ad-inline" hidden aria-label="Advertisement">
+      <span class="ad-slot__label">Sponsored</span>
+    </div>
+    <!-- END AD: INLINE -->
+
+    <!-- ==================================================== AD: BOTTOM -->
+    <!-- Ad code for this container is normally pasted in Admin > Ads. -->
+    <div class="ad-slot" id="ad-bottom" hidden aria-label="Advertisement">
+      <span class="ad-slot__label">Sponsored</span>
+    </div>
+    <!-- END AD: BOTTOM -->
+
+    <div style="height:8px"></div>
+  </main>
+
+  <!-- ================================================================ FOOTER -->
+  <footer class="app-footer">
+    <nav>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="#" id="support-link">Support</a>
+    </nav>
+    <p>Game coins have no cash value. Advertising revenue is reported in the publisher's own ad network dashboard.</p>
+  </footer>
+
+  <!-- ============================================================== NAV -->
+  <nav class="bottom-nav" aria-label="Main">
+    <div class="wrap bottom-nav__inner">
+      <button class="nav-btn is-active" type="button" data-nav="home">
+        <span class="nav-btn__icon" aria-hidden="true">◎</span>
+        <span>Play</span>
+      </button>
+      <button class="nav-btn" type="button" data-nav="upgrades" data-sheet-open="sheet-upgrades">
+        <span class="nav-btn__icon" aria-hidden="true">⬆</span>
+        <span>Upgrades</span>
+      </button>
+      <button class="nav-btn" type="button" data-nav="rewards" data-sheet-open="sheet-rewards">
+        <span class="nav-btn__icon" aria-hidden="true">◈</span>
+        <span>Rewards</span>
+      </button>
+      <button class="nav-btn" type="button" data-nav="stats" data-sheet-open="sheet-stats">
+        <span class="nav-btn__icon" aria-hidden="true">▤</span>
+        <span>Stats</span>
+      </button>
+      <button class="nav-btn" type="button" data-nav="refresh">
+        <span class="nav-btn__icon" aria-hidden="true">⟳</span>
+        <span>Sync</span>
+      </button>
+    </div>
+  </nav>
+</div>
+
+<!-- =================================================== SHEET: UPGRADES -->
+<div class="sheet" id="sheet-upgrades" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="Upgrades">
+  <div class="sheet__backdrop" data-sheet-close="sheet-upgrades"></div>
+  <div class="sheet__panel">
+    <div class="sheet__grip"></div>
+    <div class="sheet__head">
+      <div>
+        <h2 class="sheet__title">Upgrades</h2>
+        <p class="sheet__sub">Spend coins to grow. Balance: <strong id="upgrade-coins">0</strong></p>
+      </div>
+      <button class="icon-btn" type="button" data-sheet-close="sheet-upgrades" aria-label="Close">✕</button>
+    </div>
+    <div class="sheet__body">
+      <div class="stack" id="upgrade-list"></div>
+      <p class="empty-note">
+        Prices are recalculated by the server on every purchase, so editing the
+        page in your browser changes nothing.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================================================== SHEET: REWARDS -->
+<div class="sheet" id="sheet-rewards" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="Rewards">
+  <div class="sheet__backdrop" data-sheet-close="sheet-rewards"></div>
+  <div class="sheet__panel">
+    <div class="sheet__grip"></div>
+    <div class="sheet__head">
+      <div>
+        <h2 class="sheet__title">Milestones</h2>
+        <p class="sheet__sub">Each milestone can be claimed once.</p>
+      </div>
+      <button class="icon-btn" type="button" data-sheet-close="sheet-rewards" aria-label="Close">✕</button>
+    </div>
+    <div class="sheet__body">
+      <div class="stack" id="milestone-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= SHEET: STATS -->
+<div class="sheet" id="sheet-stats" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="Statistics">
+  <div class="sheet__backdrop" data-sheet-close="sheet-stats"></div>
+  <div class="sheet__panel">
+    <div class="sheet__grip"></div>
+    <div class="sheet__head">
+      <div>
+        <h2 class="sheet__title">Statistics</h2>
+        <p class="sheet__sub">Everything below comes from your account.</p>
+      </div>
+      <button class="icon-btn" type="button" data-sheet-close="sheet-stats" aria-label="Close">✕</button>
+    </div>
+    <div class="sheet__body">
+      <div class="stat-strip">
+        <div class="stat stat--taps"><span class="stat__value" id="stat-taps">0</span><span class="stat__label">Taps</span></div>
+        <div class="stat stat--coins"><span class="stat__value" id="stat-coins">0</span><span class="stat__label">Coins</span></div>
+        <div class="stat stat--level"><span class="stat__value" id="stat-level">1</span><span class="stat__label">Level</span></div>
+        <div class="stat stat--combo"><span class="stat__value" id="stat-combo">x0</span><span class="stat__label">Best combo</span></div>
+      </div>
+
+      <div class="card card--tight xp">
+        <div class="xp__head"><span>Experience</span><span id="stat-rank">#-</span></div>
+        <div class="progress" id="stat-xp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <span class="progress__fill"></span>
+        </div>
+        <div class="kv" style="margin-top:8px"><span>Member since</span><strong id="stat-member">-</strong></div>
+      </div>
+
+      <div>
+        <p class="card__title">Upgrades</p>
+        <div class="stack" id="stats-upgrades" style="gap:6px"></div>
+      </div>
+
+      <div>
+        <p class="card__title">Milestones claimed</p>
+        <div class="stack" id="stats-milestones" style="gap:6px"></div>
+      </div>
+
+      <p class="note">
+        <strong>About advertising revenue:</strong> advertising revenue is available
+        in the Adsterra Publisher Dashboard. No amount of money is calculated,
+        estimated or displayed by this game.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================================================== SHEET: SETTINGS -->
+<div class="sheet" id="sheet-settings" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="Settings">
+  <div class="sheet__backdrop" data-sheet-close="sheet-settings"></div>
+  <div class="sheet__panel">
+    <div class="sheet__grip"></div>
+    <div class="sheet__head">
+      <div>
+        <h2 class="sheet__title">Settings</h2>
+        <p class="sheet__sub" id="account-username-label">@player</p>
+      </div>
+      <button class="icon-btn" type="button" data-sheet-close="sheet-settings" aria-label="Close">✕</button>
+    </div>
+    <div class="sheet__body">
+
+      <div class="toggle-row">
+        <div>
+          <span class="toggle-row__label">Sound</span>
+          <span class="toggle-row__hint">Synthesised locally, no files downloaded</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="pref-sound" checked aria-label="Sound" />
+          <span class="switch__track"><span class="switch__thumb"></span></span>
+        </label>
+      </div>
+
+      <div class="toggle-row">
+        <div>
+          <span class="toggle-row__label">Vibration</span>
+          <span class="toggle-row__hint">Where the device supports it</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="pref-vibration" checked aria-label="Vibration" />
+          <span class="switch__track"><span class="switch__thumb"></span></span>
+        </label>
+      </div>
+
+      <div class="card card--tight stack" style="gap:10px">
+        <p class="card__title">Account</p>
+        <div class="field">
+          <label for="account-username">Username</label>
+          <input class="input" id="account-username" type="text" maxlength="24" autocomplete="username" placeholder="3-24 characters" />
+        </div>
+        <div class="field">
+          <label for="account-display-name">Display name</label>
+          <input class="input" id="account-display-name" type="text" maxlength="40" placeholder="Optional" />
+        </div>
+        <button class="btn btn--small" type="button" id="account-save">Save profile</button>
+      </div>
+
+      <div class="stack" style="gap:8px">
+        <button class="btn btn--ghost btn--block" type="button" id="btn-admin" hidden>Admin dashboard</button>
+        <button class="btn btn--ghost btn--block" type="button" id="btn-reset-prefs">Reset local preferences</button>
+        <button class="btn btn--danger btn--block" type="button" id="btn-logout">Sign out</button>
+      </div>
+
+      <p class="empty-note">
+        <a href="privacy.html">Privacy Policy</a> &middot; <a href="terms.html">Terms of Service</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+// Friendly guard: ES modules cannot be loaded from the file:// protocol.
+if (window.location.protocol === "file:") {
+  document.getElementById("boot-screen").innerHTML =
+    '<div class="fatal" style="max-width:520px">' +
+    "<h2>Serve this folder over HTTP</h2>" +
+    "<p>TAPX uses JavaScript modules, which browsers refuse to load from " +
+    "file:// URLs. From the tapx folder run one of:<br><br>" +
+    "<code>npx serve .</code><br><code>python -m http.server 8080</code><br><br>" +
+    "then open the printed http://localhost address.</p></div>";
+}
+</script>
+<script type="module" src="js/game.js"></script>
+</body>
+</html>

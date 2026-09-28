@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+package-lock.json
+package.json
+
+# Logs
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+.idea/
+.vscode/
+*.sublime-workspace
+
+# Local environment overrides
+.env
+.env.*
+!.env.example
+
+# Nothing secret belongs in this repo. The Supabase anon/publishable key in
+# js/config.js is public by design (it ships in client code and every table is
+# protected by RLS), but the service_role key, the database password and any
+# Adsterra private secret must NEVER be committed. If you ever paste one here
+# by accident, rotate it in the Supabase dashboard immediately.
+*.pem
+*.key
+id_rsa
+credentials.json
+service-role.json

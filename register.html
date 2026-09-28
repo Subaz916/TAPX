@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#09090B" />
+<meta name="color-scheme" content="dark" />
+<meta name="robots" content="noindex" />
+<title>Create account - TAPX</title>
+<link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/auth.css" />
+</head>
+
+<body>
+<main class="auth-page">
+  <div class="auth-shell">
+
+    <header class="auth-head">
+      <a class="auth-mark" href="index.html" aria-label="TAPX home">T</a>
+      <div>
+        <h1 class="auth-title">JOIN TAPX</h1>
+        <p class="auth-subtitle">One account. Your taps, coins and upgrades are stored server-side.</p>
+      </div>
+    </header>
+
+    <section class="auth-card">
+      <form class="auth-form" id="register-form" novalidate autocomplete="on">
+        <p class="auth-alert" id="error-form" role="alert"></p>
+
+        <!-- Honeypot -->
+        <div class="hp-field" aria-hidden="true">
+          <label for="website">Website</label>
+          <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+        </div>
+
+        <div class="auth-field">
+          <label class="auth-field__label" for="register-username">Username</label>
+          <div class="auth-field__wrap">
+            <input class="input" type="text" id="register-username" name="username"
+                   placeholder="tap_master" autocomplete="username" maxlength="24"
+                   pattern="[a-z0-9_]{3,24}" required />
+          </div>
+          <span class="auth-error" id="error-username"></span>
+        </div>
+
+        <div class="auth-field">
+          <label class="auth-field__label" for="register-email">Email</label>
+          <div class="auth-field__wrap">
+            <input class="input" type="email" id="register-email" name="email"
+                   placeholder="you@example.com" autocomplete="email"
+                   inputmode="email" required />
+          </div>
+          <span class="auth-error" id="error-email"></span>
+        </div>
+
+        <div class="auth-field">
+          <label class="auth-field__label" for="register-password">Password</label>
+          <div class="auth-field__wrap">
+            <input class="input" type="password" id="register-password" name="password"
+                   placeholder="At least 6 characters" autocomplete="new-password"
+                   minlength="6" required />
+            <button class="auth-field__toggle" type="button" data-toggle-password="register-password"
+                    aria-label="Show password">Show</button>
+          </div>
+          <span class="auth-error" id="error-password"></span>
+        </div>
+
+        <div class="auth-field">
+          <label class="auth-field__label" for="register-password-confirm">Confirm password</label>
+          <div class="auth-field__wrap">
+            <input class="input" type="password" id="register-password-confirm" name="password_confirm"
+                   placeholder="Repeat your password" autocomplete="new-password" required />
+          </div>
+          <span class="auth-error" id="error-password-confirm"></span>
+        </div>
+
+        <label class="auth-check">
+          <input type="checkbox" id="register-terms" required />
+          <span>
+            I agree to the <a href="terms.html">Terms of Service</a> and the
+            <a href="privacy.html">Privacy Policy</a>. I understand that game coins
+            have no cash value.
+          </span>
+        </label>
+        <span class="auth-error" id="error-terms"></span>
+
+        <button class="btn btn--primary btn--block" type="submit" id="register-submit">Create account</button>
+      </form>
+
+      <!-- Shown when the project requires email confirmation -->
+      <div class="verify-box" id="verify-panel" hidden>
+        <div class="verify-box__icon" aria-hidden="true">✉</div>
+        <h2 style="font-size:1.05rem">Check your inbox</h2>
+        <p>
+          We sent a confirmation link to <strong data-verify-email></strong>.
+          Open it to activate your account, then come back and sign in.
+        </p>
+        <a class="btn btn--small" href="login.html">Go to sign in</a>
+      </div>
+
+      <p class="auth-foot">
+        <span>Already have an account? <a href="login.html">Sign in</a></span>
+      </p>
+    </section>
+
+    <p class="empty-note">
+      <a href="privacy.html">Privacy Policy</a> &middot; <a href="terms.html">Terms of Service</a>
+    </p>
+  </div>
+</main>
+
+<script>
+if (window.location.protocol === "file:") {
+  document.querySelector(".auth-card").innerHTML =
+    '<div class="fatal"><h2>Serve this folder over HTTP</h2>' +
+    "<p>TAPX uses JavaScript modules, which browsers refuse to load from file:// URLs. " +
+    "Run <code>npx serve .</code> inside the tapx folder and open the http://localhost address.</p></div>";
+}
+</script>
+<script type="module">
+  import { initRegister } from "./js/auth.js";
+  initRegister();
+</script>
+</body>
+</html>

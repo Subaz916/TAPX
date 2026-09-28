@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#09090B" />
+<meta name="color-scheme" content="dark" />
+<title>Privacy Policy - TAPX</title>
+<link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .legal { max-width: 760px; margin: 0 auto; padding: 24px 16px calc(48px + var(--safe-bottom)); }
+  .legal h1 { font-size: 1.7rem; margin-bottom: 6px; }
+  .legal h2 { font-size: 1.05rem; margin: 26px 0 8px; color: var(--primary); }
+  .legal p, .legal li { font-size: 0.9rem; color: var(--text-dim); line-height: 1.7; }
+  .legal ul { padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+  .legal strong { color: var(--text); }
+  .legal__meta { font-size: 0.78rem; color: var(--text-faint); }
+  .legal__toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 6px; }
+</style>
+</head>
+
+<body>
+<div class="app">
+  <header class="app-header">
+    <div class="wrap app-header__inner">
+      <a class="brand" href="index.html"><span class="brand__mark">T</span><span>TAPX</span></a>
+      <div class="spacer"></div>
+      <a class="chip" href="terms.html">Terms</a>
+    </div>
+  </header>
+
+  <main class="legal">
+    <h1>Privacy Policy</h1>
+    <p class="legal__meta">
+      Last updated: <span data-policy-date>the day you publish this site</span>.
+      Replace this page with a policy that matches how you actually operate the
+      site before you launch.
+    </p>
+
+    <div class="note mt-2">
+      <strong>Template notice.</strong> This is a starting point written for this
+      project, not legal advice. It describes exactly what this codebase does.
+      You are responsible for reviewing it, adding your own contact details, and
+      complying with the laws that apply to you.
+    </div>
+
+    <h2 id="who">1. Who we are</h2>
+    <p>
+      TAPX ("the game", "we", "us") is a free tapping game. This policy explains
+      what information the game stores, why, and what you can do about it.
+      Contact: <a href="#" data-support-link>support email configured by the site owner</a>.
+    </p>
+
+    <h2 id="collect">2. What the game stores</h2>
+    <p>The game stores only what it needs to run:</p>
+    <ul>
+      <li><strong>Account data:</strong> your email address, a username and an optional display name. These are managed by Supabase Auth and stored in Supabase's database.</li>
+      <li><strong>Game data:</strong> total taps, coin balance, level, experience, highest combo, purchased upgrades, claimed milestones and your daily-reward streak.</li>
+      <li><strong>Preferences:</strong> sound on/off and vibration on/off. These are stored against your account and also cached in your browser's local storage.</li>
+      <li><strong>Sign-in security data:</strong> Supabase records sign-in timestamps and sessions so that your account stays secure.</li>
+    </ul>
+    <p>
+      We do not ask for your name, your address, your phone number, your payment
+      details, your government ID, or your location. We do not build advertising
+      profiles of you.
+    </p>
+
+    <h2 id="local">3. What is stored in your browser</h2>
+    <p>
+      A small amount of UI preference data is kept in your browser's
+      <code>localStorage</code>: whether sound and vibration are enabled, the last
+      username you typed, and an onboarding flag. This data never contains
+      balances, sessions or anything you would mind losing, and you can clear it
+      at any time with <em>Settings &rarr; Reset local preferences</em>.
+    </p>
+    <p>
+      Your Supabase session token is stored by the Supabase client so you stay
+      signed in. That is standard for any web app that keeps you logged in.
+    </p>
+
+    <h2 id="ads">4. Advertising</h2>
+    <p>
+      This site may display advertising in clearly marked, visible areas. The ads
+      are served by a third-party advertising network (for example Adsterra) using
+      that network's own code, and that network's own privacy policy governs what
+      it collects.
+    </p>
+    <p>The game itself:</p>
+    <ul>
+      <li>does not hide advertising, hide it behind other content, or make it invisible;</li>
+      <li>does not load, refresh or request an advertisement when you tap;</li>
+      <li>does not simulate impressions, clicks or any other ad activity;</li>
+      <li>does not calculate or display advertising revenue anywhere in the game.</li>
+    </ul>
+    <p>
+      When an ad is served, that network may set its own cookies or use its own
+      local storage. You can opt out through the network's own options, and your
+      browser's privacy settings also apply. See the network's privacy policy for
+      details.
+    </p>
+
+    <h2 id="cookies">5. Cookies</h2>
+    <p>
+      The game itself does not set advertising cookies. Cookies and local storage
+      may be set by Supabase (to keep you signed in) and by the advertising network
+      (to serve and measure ads). You can clear or block them in your browser
+      settings; blocking them will stop you from staying signed in.
+    </p>
+
+    <h2 id="share">6. Who can see your data</h2>
+    <ul>
+      <li><strong>Your own data:</strong> only you can read your profile, balance, upgrades and milestones. This is enforced in the database, not just in the interface.</li>
+      <li><strong>Administrators:</strong> the game's administrators can see your username, masked email address, total taps, coin balance, level, join date and last-seen time. They cannot edit your balance except through the explicit, logged "coin adjustment" action.</li>
+      <li><strong>Nobody else.</strong> Game data is never sold, rented or shared with advertisers.</li>
+    </ul>
+
+    <h2 id="retention">7. How long data is kept</h2>
+    <p>
+      Your account and game data are kept for as long as your account exists. If
+      you want your account and data deleted, contact the support address above.
+      Deleting your account deletes your profile, game data, upgrades, milestones
+      and daily-reward record.
+    </p>
+
+    <h2 id="rights">8. Your rights</h2>
+    <p>
+      Depending on where you live, you may have the right to access, correct,
+      export or delete your personal data, or to object to its processing. You can
+      change your username, display name and preferences yourself in the game. For
+      anything else, email the support address and we will respond.
+    </p>
+
+    <h2 id="security">9. Security</h2>
+    <p>
+      Passwords are handled by Supabase Auth and are never stored by this game.
+      All access to game data is enforced by database Row Level Security, and every
+      change to a balance, level or purchase is validated on the server. No system
+      is perfectly secure, but we do not collect the personal data that would make
+      a breach more damaging.
+    </p>
+
+    <h2 id="children">10. Children</h2>
+    <p>
+      The game is not directed at children under 13, and we do not knowingly
+      collect data from them. If you believe a child has created an account,
+      contact us and we will remove it.
+    </p>
+
+    <h2 id="changes">11. Changes to this policy</h2>
+    <p>
+      If this policy changes, the updated version will be published on this page
+      with a new date. Material changes will also be announced in the game.
+    </p>
+
+    <h2 id="contact">12. Contact</h2>
+    <p>
+      Questions about this policy: <a href="#" data-support-link>support email</a>.
+      Advertising questions are answered by the network's own publisher support,
+      not by this game.
+    </p>
+
+    <hr style="border:0;border-top:1px solid var(--border);margin:32px 0 20px" />
+    <p class="legal__meta">
+      <a href="index.html">Back to the game</a> &middot; <a href="terms.html">Terms of Service</a>
+    </p>
+  </main>
+</div>
+
+<script type="module">
+  // Fill in the support email and the real current date at runtime so the page
+  // never shows a placeholder address.
+  import { rpc } from "./js/supabase.js";
+  import { CONFIG } from "./js/config.js";
+  const fallback = CONFIG.supportEmail || "the support address listed in the game settings";
+  try {
+    const cfg = await rpc("get_public_config", {});
+    const email = cfg?.settings?.support_email;
+    document.querySelectorAll("[data-support-link]").forEach((a) => {
+      a.textContent = email || fallback;
+      if (email) a.href = "mailto:" + email;
+    });
+    if (cfg?.settings?.privacy_url) { /* settings point at this page already */ }
+  } catch {
+    document.querySelectorAll("[data-support-link]").forEach((a) => { a.textContent = fallback; });
+  }
+  const d = new Date();
+  document.querySelectorAll("[data-policy-date]").forEach((n) => {
+    n.textContent = d.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+  });
+</script>
+</body>
+</html>
