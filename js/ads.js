@@ -39,6 +39,24 @@
  *   * document.write() snippets are rejected on save and again here, because
  *     injected after load they would blank the page.
  *   * A failing snippet is contained: the game keeps working without ads.
+ *
+ * SCRIPT-ONLY FORMATS (popunder, smartlink)
+ * ------------------------------------------
+ *   These are not placements. They have no visible box in the page, so they are
+ *   kept in a separate database table and never given one of the five visible
+ *   containers. Each loads exactly once per page view, and only while the
+ *   master ads switch is on.
+ *
+ *   The popunder is the network's own script. TAPX does not open a window, does
+ *   not hook clicks, and does not decide when it fires: the network's code
+ *   attaches its own listener and only ever shows on the user's own click on a
+ *   link that leaves the game. There is no automatic, timed or tap-triggered
+ *   pop path anywhere in this file.
+ *
+ *   The smartlink is a URL prefix, not code. It is applied to exactly one link,
+ *   the explicit Exit button, which is created only once the owner has saved a
+ *   smartlink. The privacy, terms and support links are never wrapped: a user
+ *   asking for help or reading the privacy policy must reach it directly.
  * ========================================================================== */
 
 import { CONFIG } from "./config.js";
@@ -62,6 +80,7 @@ const state = {
   master: false,
   local: false,
   placements: [],
+  scripts: [],
   maintenance: false
 };
 
@@ -120,6 +139,7 @@ async function init() {
 
   applyConfig(config);
   state.placements.forEach(registerPlacement);
+  mountScriptFormats();
   report();
 
   on("config:refresh", (e) => {
@@ -129,10 +149,111 @@ async function init() {
   });
 }
 
+/* -----------------------------------------------------------------------------
+ * Script-only formats: popunder and smartlink
+ * --------------------------------------------------------------------------
+ * A popunder and a smartlink produce no visible box, so they are kept out of
+ * LOCATION_TO_CONTAINER entirely. Both are handled once, here, on page load.
+ * ------------------------------------------------------------------------- */
+
+/** Where the popunder / smartlink script is attached. Never visible. */
+function scriptHost() {
+  let host = document.getElementById("tapx-ad-scripts");
+  if (!host) {
+    host = document.createElement("div");
+    host.id = "tapx-ad-scripts";
+    // aria-hidden: these formats have no on-page UI to describe, and the Exit
+    // button is a normal, labelled control that screen readers already reach.
+    host.setAttribute("aria-hidden", "true");
+    host.style.display = "none";
+    document.body.appendChild(host);
+  }
+  return host;
+}
+
+/**
+ * Load every enabled script-only format, once.
+ *
+ * A script that was already injected this page load is never touched again, so
+ * a config refresh cannot reload it. If the master switch is off, nothing is
+ * injected at all - that is the remote kill switch.
+ */
+function mountScriptFormats() {
+  const host = scriptHost();
+  let loaded = 0;
+
+  // A smartlink is a URL prefix, not a script, so it is applied to the Exit link
+  // rather than injected. The Exit link is also the one reliable, clearly
+  // labelled place for the network's popunder to open from.
+  const smartlink = state.scripts.find((s) => s?.kind === "smartlink");
+  applyExitLink(typeof smartlink?.code === "string" ? smartlink.code.trim() : "");
+
+  for (const entry of state.scripts) {
+    if (entry?.kind !== "popunder") continue;
+    const raw = typeof entry.code === "string" ? entry.code.trim() : "";
+    if (!raw) continue;
+    if (injected.has("script:popunder")) continue;
+
+    if (state.enabled && injectSnippet(host, "script:popunder", raw)) {
+      injected.set("script:popunder", raw);
+      loaded += 1;
+    }
+  }
+
+  if (state.enabled && loaded > 0) {
+    console.log(
+      `[ads] popunder script loaded once for this page view. It opens only on ` +
+        `the user's own click on the Exit link.`
+    );
+  }
+}
+
+/**
+ * Point the Exit link at the owner's smartlink, or at its plain destination.
+ *
+ * The link stays hidden until there is somewhere real to send the user, so it
+ * can never be a dead "#" link. With no smartlink it is an ordinary exit link
+ * and the popunder still has a clean place to fire from.
+ *
+ * Only #exit-link is ever wrapped. The privacy, terms and support links are
+ * left untouched on purpose, so a user can always reach the legal pages and
+ * get help without an ad page in the way.
+ */
+function applyExitLink(prefix) {
+  const link = document.getElementById("exit-link");
+  if (!link) return false;
+
+  const destination = (link.dataset.destination || "").trim();
+
+  if (prefix) {
+    // Support both common smartlink shapes without the owner having to know the
+    // difference: a bare domain gets "?" appended, anything that already carries
+    // a query separator is used as-is. The destination is always appended last.
+    const separator = /[?&]$/.test(prefix) ? "" : /[?&]/.test(prefix) ? "&" : "?";
+    link.href = `${prefix}${separator}url=${encodeURIComponent(destination)}`;
+    link.hidden = false;
+    if (!injected.has("exit:smartlink")) {
+      injected.set("exit:smartlink", prefix);
+      console.log("[ads] Exit link is wrapped by the configured smartlink.");
+    }
+    return true;
+  }
+
+  if (destination) {
+    link.href = destination;
+    link.hidden = false;
+    return true;
+  }
+
+  link.hidden = true;
+  return false;
+}
+
 /** Pull the parts of the public config this module cares about into `state`. */
 function applyConfig(config) {
   if (!config || typeof config !== "object") return;
   if (Array.isArray(config.placements)) state.placements = config.placements;
+  if (Array.isArray(config.scripts)) state.scripts = config.scripts;
   state.maintenance = config?.settings?.maintenance_mode === true;
   state.master = config?.settings?.ads_enabled === true;
   state.enabled = state.local && state.master;
@@ -181,6 +302,32 @@ function report() {
     lines.push(`[ads] ${location} (${selector}): ${verdict} [code ${len} chars]`);
     if (host?.classList.contains("is-error")) {
       lines.push(`[ads] ${location}: render error - see the warning above`);
+    }
+  }
+
+  console.log(lines.join("\n"));
+  reportScriptFormats();
+}
+
+/** One line per script-only format, so a silent popunder is never a mystery. */
+function reportScriptFormats() {
+  const byKind = new Map(state.scripts.map((s) => [s.kind, s]));
+  const lines = [];
+
+  for (const kind of ["popunder", "smartlink"]) {
+    const entry = byKind.get(kind);
+    if (!entry) {
+      lines.push(
+        `[ads] ${kind}: not enabled in the database, nothing loaded. ` +
+          `Enable it in Admin > Ads.`
+      );
+      continue;
+    }
+    const len = typeof entry.code === "string" ? entry.code.trim().length : 0;
+    if (!state.enabled) {
+      lines.push(`[ads] ${kind}: saved (${len} chars) but the master switch is OFF.`);
+    } else {
+      lines.push(`[ads] ${kind}: active, loaded once for this page view (${len} chars).`);
     }
   }
 

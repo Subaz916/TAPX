@@ -90,6 +90,19 @@ drop policy if exists "placements_admin_write" on public.ad_placements;
 create policy "placements_admin_write" on public.ad_placements
   for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
+-- ad_scripts. Reads are admin-only: the game never queries this table directly,
+-- it receives the enabled snippets through get_public_config(), which is
+-- SECURITY DEFINER. So a signed-in non-admin cannot list the table or read a
+-- disabled row. Writes go through admin_set_ad_script(), which additionally
+-- calls require_admin() and re-validates the snippet.
+drop policy if exists "scripts_admin_read" on public.ad_scripts;
+create policy "scripts_admin_read" on public.ad_scripts
+  for select to authenticated using (public.is_admin());
+
+drop policy if exists "scripts_admin_write" on public.ad_scripts;
+create policy "scripts_admin_write" on public.ad_scripts
+  for all to authenticated using (public.is_admin()) with check (public.is_admin());
+
 drop policy if exists "settings_public_read" on public.app_settings;
 create policy "settings_public_read" on public.app_settings
   for select to anon, authenticated using (true);
@@ -229,6 +242,8 @@ grant execute on function public.admin_set_setting(text, jsonb)                 
 grant execute on function public.admin_save_placement(bigint, text, text, text, text, boolean, integer) to authenticated;
 grant execute on function public.admin_ensure_placements()            to authenticated;
 grant execute on function public.admin_set_ad_code(text, text)      to authenticated;
+grant execute on function public.admin_set_ad_script(text, text, boolean) to authenticated;
+grant execute on function public.admin_ensure_ad_scripts()         to authenticated;
 grant execute on function public.admin_delete_placement(bigint)     to authenticated;
 grant execute on function public.admin_save_upgrade(bigint, text, text, text, text, bigint, numeric, numeric, integer, integer, boolean) to authenticated;
 grant execute on function public.admin_delete_upgrade(bigint)                              to authenticated;

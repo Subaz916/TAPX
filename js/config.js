@@ -93,7 +93,7 @@ export const CONFIG = Object.freeze({
    * inserted a new row but the validation function that guards it is still an
    * old version, so saving the row fails with a message that looks like the
    * input was wrong. */
-  schemaVersion: 5,
+  schemaVersion: 6,
 
   /* Optional overrides. Leave null to use the defaults. */
   supportEmail: null,

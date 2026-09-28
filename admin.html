@@ -236,11 +236,13 @@
         <h3>Advertising policy reminder</h3>
         <ul>
           <li>Only paste the exact code your ad network gave you in your publisher dashboard. TAPX never generates ad code.</li>
-          <li>Ads are visible containers only. There are no hidden iframes, no invisible windows and no auto-refresh loops.</li>
+          <li>The five banner slots are visible containers. There are no hidden iframes and no auto-refresh loops.</li>
           <li>No ad is loaded, requested or refreshed on a tap. Tapping the game button never triggers an ad.</li>
           <li>A saved snippet is rendered exactly once per page load. It is never re-injected, so a refresh cannot double-count an impression.</li>
+          <li>A popunder, if you enable one, is the network's own script. It only ever opens from the user's own click on the Exit link. TAPX never opens a window, never hooks a click and never triggers it on a timer, on load or on a tap.</li>
+          <li>A smartlink wraps the Exit link only. The Privacy, Terms and Support links are never routed through an ad page.</li>
           <li>No impressions, clicks or earnings are simulated anywhere in this application.</li>
-          <li>This panel cannot manufacture ad activity. It only stores your own network's code and switches containers on or off.</li>
+          <li>This panel cannot manufacture ad activity. It only stores your own network's code and switches things on or off.</li>
           <li>All impressions, clicks and revenue are reported by the network's own code and visible in the network's publisher dashboard.</li>
         </ul>
       </div>
@@ -310,15 +312,15 @@
           </div>
           <div>
             <strong style="font-size:.86rem">#ad-stats</strong>
-            <p class="empty-note" style="text-align:left;padding:4px 0">Directly under the stats strip, above the XP bar.</p>
+            <p class="empty-note" style="text-align:left;padding:4px 0">Directly under the coin/XP chip row, above the XP bar. This is <em>not</em> the Stats screen.</p>
           </div>
           <div>
             <strong style="font-size:.86rem">#ad-between</strong>
-            <p class="empty-note" style="text-align:left;padding:4px 0">Between the daily reward and the tap button.</p>
+            <p class="empty-note" style="text-align:left;padding:4px 0">After the tap area, above the disclaimer.</p>
           </div>
           <div>
             <strong style="font-size:.86rem">#ad-inline</strong>
-            <p class="empty-note" style="text-align:left;padding:4px 0">In-content unit below the tap area.</p>
+            <p class="empty-note" style="text-align:left;padding:4px 0">After the disclaimer, above the bottom slot.</p>
           </div>
           <div>
             <strong style="font-size:.86rem">#ad-bottom</strong>
@@ -330,6 +332,92 @@
             all and the game is unaffected.
           </p>
         </div>
+      </div>
+
+      <!-- ============================================ SCRIPT-ONLY FORMATS -->
+      <div class="panel">
+        <p class="panel__title">Popunder</p>
+        <p class="note" style="margin-top:0">
+          A popunder has <strong>no visible box on the page</strong>, so it is not
+          a placement and never gets one of the five containers above. Paste the
+          network's popunder script tag; it is loaded once per page view and
+          only ever opens from the user's <strong>own click</strong> on the
+          <strong>Exit</strong> link. It is never automatic, never timed and never
+          triggered by tapping the game button.
+        </p>
+        <div class="form-grid form-grid--2" style="margin-top:12px">
+          <div class="field">
+            <label for="popunder-code">Popunder script (pasted verbatim)</label>
+            <textarea
+              class="input input--code"
+              id="popunder-code"
+              rows="4"
+              spellcheck="false"
+              autocomplete="off"
+              placeholder="&lt;script async src=&quot;//...&quot;&gt;&lt;/script&gt;"
+            ></textarea>
+          </div>
+          <div class="field">
+            <label for="popunder-state">Status</label>
+            <p class="empty-note" id="popunder-state" style="padding:8px 0">Loading&hellip;</p>
+            <label class="check-inline" style="margin-top:6px">
+              <input type="checkbox" id="popunder-enabled" /> Popunder enabled
+            </label>
+          </div>
+          <div class="form-actions span-2">
+            <button class="btn btn--primary" type="button" id="popunder-save">Save popunder</button>
+            <button class="btn btn--ghost" type="button" id="popunder-clear">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <p class="panel__title">Smartlink</p>
+        <p class="note" style="margin-top:0">
+          A smartlink is a <strong>URL, not a script</strong>. Paste the address
+          your network gave you, including any <code>?url=</code> or
+          <code>&amp;url=</code> prefix, and the game appends the destination to
+          it.
+        </p>
+        <p class="note">
+          It is applied to the <strong>Exit</strong> link only. The Privacy, Terms
+          and Support links are never wrapped, so a user can always reach your
+          legal pages and ask for help without an ad page in the way. The plain
+          destination the Exit link falls back to is the
+          <code>data-destination</code> attribute on <code>#exit-link</code> in
+          <code>index.html</code>.
+        </p>
+        <div class="form-grid form-grid--2" style="margin-top:12px">
+          <div class="field">
+            <label for="smartlink-url">Smartlink address</label>
+            <input
+              class="input"
+              id="smartlink-url"
+              type="url"
+              spellcheck="false"
+              autocomplete="off"
+              placeholder="https://smart.example.com/?url="
+            />
+          </div>
+          <div class="field">
+            <label for="smartlink-state">Status</label>
+            <p class="empty-note" id="smartlink-state" style="padding:8px 0">Loading&hellip;</p>
+            <label class="check-inline" style="margin-top:6px">
+              <input type="checkbox" id="smartlink-enabled" /> Smartlink enabled
+            </label>
+          </div>
+          <div class="form-actions span-2">
+            <button class="btn btn--primary" type="button" id="smartlink-save">Save smartlink</button>
+            <button class="btn btn--ghost" type="button" id="smartlink-clear">Clear</button>
+          </div>
+        </div>
+        <p class="note" style="margin-top:10px">
+          <strong>Running both on the same click?</strong> If the popunder and the
+          smartlink are both enabled, one Exit click can open the smartlink page
+          and the popunder together. That is your call, but some networks treat
+          two ads from one click unfavourably, so test the fill rate before
+          leaving both on.
+        </p>
       </div>
 
       <div class="panel">

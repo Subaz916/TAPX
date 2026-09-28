@@ -80,13 +80,13 @@ values
    'Visible banner directly under the XP card. The official Adsterra code for this placement goes inside the #ad-top container in index.html.',
    false, 1),
   ('stats', 'Sponsored', 'stats',
-   'Visible unit directly under the stats strip. Official code goes inside #ad-stats.',
+   'Visible unit directly under the coin/XP chip row, above the XP bar. Official code goes inside #ad-stats. This is NOT the Stats screen.',
    false, 2),
   ('between', 'Sponsored', 'between',
-   'Visible unit between the daily reward card and the tap button. Official code goes inside #ad-between.',
+   'Visible unit after the tap area, above the disclaimer. Official code goes inside #ad-between.',
    false, 3),
   ('inline', 'Sponsored', 'inline',
-   'Visible in-content unit below the tap area. Official code goes inside #ad-inline.',
+   'Visible in-content unit after the disclaimer. Official code goes inside #ad-inline.',
    false, 4),
   ('bottom', 'Sponsored', 'bottom',
    'Visible unit above the bottom navigation. Official code goes inside #ad-bottom.',
@@ -97,6 +97,16 @@ on conflict (slug) do update
       description = excluded.description,
       sort_order = excluded.sort_order,
       updated_at = now();
+
+-- Script-only ad formats. These have no visible container, so they live in
+-- their own table and are never given one of the five slots above.
+--
+-- on conflict do nothing is deliberate: it preserves a pasted snippet AND the
+-- enabled state, so re-running this file can never switch an ad on by accident.
+insert into public.ad_scripts (kind, enabled) values
+  ('popunder', false),
+  ('smartlink', false)
+on conflict (kind) do nothing;
 
 -- -----------------------------------------------------------------------------
 -- 4. App settings

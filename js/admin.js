@@ -37,6 +37,7 @@ import {
 const state = {
   settings: {},
   placements: [],
+  scripts: [],
   upgrades: [],
   milestones: [],
   announcements: [],
@@ -676,6 +677,100 @@ function bindAds() {
         .catch((err) => toast(friendlyError(err), "error"));
     }
   });
+
+  bindScriptFormat("popunder");
+  bindScriptFormat("smartlink");
+}
+
+/* -----------------------------------------------------------------------------
+ * Script-only formats: popunder and smartlink
+ * --------------------------------------------------------------------------
+ * One shared handler for both. The only differences are the field ids and, for
+ * a smartlink, that the value is a URL rather than a script tag. Both are
+ * written through admin_set_ad_script(), which re-validates server-side.
+ * ------------------------------------------------------------------------- */
+function bindScriptFormat(kind) {
+  const field = kind === "smartlink" ? $("#smartlink-url") : $("#popunder-code");
+  const toggle = kind === "smartlink" ? $("#smartlink-enabled") : $("#popunder-enabled");
+  const status = kind === "smartlink" ? $("#smartlink-state") : $("#popunder-state");
+  const saveBtn = kind === "smartlink" ? $("#smartlink-save") : $("#popunder-save");
+  const clearBtn = kind === "smartlink" ? $("#smartlink-clear") : $("#popunder-clear");
+  if (!field || !saveBtn) return;
+
+  const current = () => state.scripts.find((s) => s.kind === kind) || null;
+  const name = kind === "popunder" ? "Popunder" : "Smartlink";
+
+  saveBtn?.addEventListener("click", async () => {
+    const value = field.value.trim();
+    if (value && kind === "smartlink" && !/^https?:\/\//i.test(value)) {
+      toast("A smartlink must be an http:// or https:// address.", "warn");
+      return;
+    }
+    try {
+      await rpc("admin_set_ad_script", {
+        p_kind: kind,
+        p_code: value || null,
+        p_enabled: toggle?.checked === true
+      });
+      toast(`${name} saved.`, "success");
+      await loadScripts();
+    } catch (err) {
+      // Keep the server's own rejection visible: "cannot enable X because no
+      // code has been saved" is the useful message here, not a generic failure.
+      toast(friendlyError(err), "error");
+      if (status) status.textContent = friendlyError(err);
+    }
+  });
+
+  clearBtn?.addEventListener("click", async () => {
+    try {
+      await rpc("admin_set_ad_script", { p_kind: kind, p_code: null, p_enabled: false });
+      field.value = "";
+      if (toggle) toggle.checked = false;
+      toast(`${name} cleared and disabled.`, "success");
+      await loadScripts();
+    } catch (err) {
+      toast(friendlyError(err), "error");
+    }
+  });
+
+  // Ticking the switch without pasting anything is the mistake the server
+  // blocks; warn before spending a round trip on it.
+  toggle?.addEventListener("change", () => {
+    if (toggle.checked && !current()?.code) {
+      toast(`Paste the ${name.toLowerCase()} ${kind === "popunder" ? "script" : "address"} first, then tick this.`, "warn");
+    }
+  });
+}
+
+/** Read both script-only rows for the editor. */
+async function loadScripts() {
+  const sb = supabase();
+  const { data, error } = await sb
+    .from("ad_scripts")
+    .select("kind, code, enabled")
+    .in("kind", ["popunder", "smartlink"]);
+  if (error) return;
+
+  state.scripts = data || [];
+  state.scripts.forEach(renderScriptFormat);
+}
+
+function renderScriptFormat(entry) {
+  const { kind } = entry;
+  const field = kind === "smartlink" ? $("#smartlink-url") : $("#popunder-code");
+  const toggle = kind === "smartlink" ? $("#smartlink-enabled") : $("#popunder-enabled");
+  const status = kind === "smartlink" ? $("#smartlink-state") : $("#popunder-state");
+  const name = kind === "popunder" ? "Popunder" : "Smartlink";
+  const len = typeof entry.code === "string" ? entry.code.trim().length : 0;
+
+  if (field && document.activeElement !== field) field.value = entry.code || "";
+  if (toggle) toggle.checked = entry.enabled === true;
+  if (status) {
+    status.textContent = len === 0
+      ? `No ${kind} saved yet.`
+      : `${name}: ${entry.enabled ? "ON" : "OFF"} - ${len} characters saved.`;
+  }
 }
 
 /* -----------------------------------------------------------------------------
@@ -871,6 +966,7 @@ async function loadContent() {
     state.milestones = data.milestones;
     state.announcements = data.announcements;
     renderContent();
+    await loadScripts();
   } catch (err) {
     toast(friendlyError(err), "error");
   }

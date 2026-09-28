@@ -162,7 +162,8 @@ not need it. The database value wins whenever both exist.
 - Only the official Adsterra publisher code goes into that textarea. Never
   invent, guess or hand-write ad code.
 - No hidden, invisible, off-screen, or `opacity: 0` ad units.
-- No ads on tap, on click, on key press, or on any user interaction.
+- No ads on tap, on key press, or on any in-game interaction. **Tapping the game
+  button never triggers an ad.**
 - No forced auto-refresh and no reload loops. A saved snippet is injected
   **exactly once per page load** and is never re-injected, so a settings refresh
   can never double-count an impression.
@@ -171,6 +172,10 @@ not need it. The database value wins whenever both exist.
 - Ads must not obstruct the tap button, the reward button, or navigation.
 - Never route users to a placement only to inflate impressions.
 
+The one click-triggered exception, if you switch it on, is the popunder and the
+smartlink below. Both are described honestly in
+[Popunder and smartlink](#popunder-and-smartlink).
+
 `record_ad_event()` is used for your own coarse, rate-limited app-side records of
 which slots were viewed (`placement_view`) and which were closed
 (`placement_close`). It is **not** an ad-network impression system: the server
@@ -178,11 +183,44 @@ rejects unknown or disabled placements and caps one record per placement per
 `CONFIG.ads.recordCooldownMs` (60s) per user. Your ad network's own rules and
 capping apply on top of that, independently.
 
+### Popunder and smartlink
+
+These two are **not** placements. A popunder and a smartlink produce no visible
+box on the page, so giving them one of the five containers would leave an empty
+bordered "Sponsored" frame and misrepresent them. They live in their own table,
+`public.ad_scripts`, and are managed in the same Ads panel.
+
+| Format | What you paste | How it behaves |
+| --- | --- | --- |
+| **Popunder** | The network's popunder `<script>` tag | Loaded once per page view, and only opens from the user's **own click on the Exit link**. Never automatic, never on a timer, never on load, never on a tap. |
+| **Smartlink** | A URL, including any `?url=` or `&url=` prefix | The Exit link's `href` is rewritten to `<your smartlink>&url=<destination>`. Nothing is injected. |
+
+**TAPX does not open a window and does not hook clicks.** The popunder is your
+network's own script; it brings its own click listener and its own timing. This
+project only injects the script once, and provides a single clearly labelled
+Exit link for it to fire from.
+
+**Only the Exit link is ever wrapped by a smartlink.** The Privacy, Terms and
+Support links are left direct on purpose — a user reading your privacy policy or
+asking for help must reach it without an ad page in the way. The plain
+destination the Exit link falls back to is the `data-destination` attribute on
+`#exit-link` in `index.html`; the link stays hidden until either a smartlink or
+a destination exists, so it can never be a dead `#` link.
+
+Both default to **off** and are restored empty by
+`admin_ensure_ad_scripts()`. `admin_set_ad_script()` refuses to enable a format
+that has no code saved, and refuses a smartlink that is not an `http(s)` URL.
+
+Running both at once means one Exit click can open the smartlink page *and* the
+popunder. That is allowed, but some networks treat two ads from a single click
+unfavourably — check your fill rate before leaving both on.
+
 ### Notes on storing the snippet
 
 - The snippet is stored in `public.ad_placements.code` and is written only
   through the `admin_set_ad_code()` RPC, which calls `require_admin()` in the
-  database. A non-admin cannot change it.
+  database. A non-admin cannot change it. Popunder and smartlink values go to
+  `public.ad_scripts.code` through `admin_set_ad_script()`, same rule.
 - It is rendered verbatim, because a publisher tag is a `<script>` and cannot be
   made to work any other way. **An administrator can therefore already run
   arbitrary JavaScript on this site** — they also control the app name, the
@@ -191,6 +229,10 @@ capping apply on top of that, independently.
 - Snippets using `document.write()` are rejected, on save and again at render
   time. Injected after page load they would blank the page. Ask your network for
   the standard `<script>` version. A max of 20,000 characters is enforced.
+- `ad_scripts` has **no public read policy**. The game gets the enabled snippets
+  through `get_public_config()`, which is `SECURITY DEFINER`, and only an admin
+  can read the table directly, so a signed-in non-admin cannot list disabled
+  rows.
 - The snippet is readable by anyone who can see the page, exactly as it already
   was when it was hard-coded in `index.html`. It is not a secret.
 - If a snippet is broken, the app logs a warning and the game keeps working.
@@ -199,7 +241,11 @@ capping apply on top of that, independently.
 
 `schema.sql` is idempotent: simply run it again in the SQL Editor. That adds the
 `code` column, the `admin_set_ad_code()` function, its grant, and the
-`ads_enabled` setting without touching any existing data, code or role.
+`ads_enabled` setting without touching any existing data, code or role. It also
+bumps `app_settings.schema_version`; the admin Ads panel shows a warning banner
+when the live database is behind `CONFIG.schemaVersion`, which is how a stale
+database becomes visible instead of surfacing later as a confusing validation
+error.
 
 ---
 
@@ -291,7 +337,7 @@ tapx/
     upgrades.js           upgrade list, purchase, costs
     rewards.js            daily reward + milestones
     stats.js              XP, level, rank
-    ads.js                ad slot visibility + rate-limited records
+    ads.js                ad slots + script-only popunder/smartlink
     settings.js           header, preferences, announcement
     admin.js              dashboard (admin-only)
     security.js           escaping + clamped number coercion
@@ -350,10 +396,10 @@ marked templates and are not legal advice.
 ## 8. Verification performed
 
 - `schema.sql`, `policies.sql` and `seed.sql` parse cleanly against the real
-  PostgreSQL grammar (193 / 111 / 5 statements).
-- All 36 PL/pgSQL function bodies parse cleanly.
+  PostgreSQL grammar (204 / 115 / 6 statements).
+- All 38 PL/pgSQL function bodies parse cleanly.
 - Every `GRANT`/`REVOKE` signature matches the function it refers to.
-- All 26 `rpc(...)` calls made by the frontend resolve to a function that exists
+- All 27 `rpc(...)` calls made by the frontend resolve to a function that exists
   and is granted to the correct role.
 - Every direct table read in the frontend is covered by a matching RLS select
   policy.

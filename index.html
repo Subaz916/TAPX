@@ -184,6 +184,21 @@
       <a href="terms.html">Terms</a>
       <a href="#" id="support-link">Support</a>
     </nav>
+
+    <!--
+      Exit link. This is the ONLY link on the site that may be wrapped by a
+      smartlink, and it is wrapped only when the owner has saved one in
+      Admin > Ads. It is hidden until then, so the button is never a dead link.
+
+      data-destination is where the user is sent if no smartlink is configured.
+      Point it at your own site, a thank-you page or anywhere sensible. It is a
+      plain attribute, so the app never decides this for you.
+    -->
+    <p class="app-footer__exit">
+      <a href="#" id="exit-link" rel="noopener nofollow sponsored"
+         data-destination="https://github.com/Subaz916/TAPX" hidden>Exit</a>
+    </p>
+
     <p>Game coins have no cash value. Advertising revenue is reported in the publisher's own ad network dashboard.</p>
   </footer>
 
