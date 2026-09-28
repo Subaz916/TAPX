@@ -401,6 +401,47 @@ async function loadSettings() {
   if (adsMaster && document.activeElement !== adsMaster) {
     adsMaster.checked = s.ads_enabled === true;
   }
+
+  reportSchemaVersion(s);
+}
+
+/* -----------------------------------------------------------------------------
+ * Schema version check
+ * --------------------------------------------------------------------------
+ * A database that was never re-run after a schema change fails in confusing
+ * ways: seed.sql inserts new rows, but the validation function that guards
+ * them is still the old version, so saving one of those rows is rejected with
+ * an error that reads like the input was wrong. Comparing the version written
+ * by schema.sql against the one this build expects turns that into one obvious
+ * message.
+ * ------------------------------------------------------------------------- */
+function reportSchemaVersion(settings) {
+  const el = $("#db-version");
+  if (!el) return;
+
+  const expected = Number(CONFIG.schemaVersion);
+  const live = Number(settings?.schema_version);
+  const liveLabel = Number.isFinite(live) ? String(live) : "none";
+
+  if (!Number.isFinite(live)) {
+    el.className = "db-version db-version--warn";
+    el.textContent =
+      "No schema_version found. This database has never run the current " +
+      "supabase/schema.sql - re-run it now or admin actions will fail.";
+    return;
+  }
+
+  if (live < expected) {
+    el.className = "db-version db-version--warn";
+    el.textContent =
+      `Database is out of date (schema_version ${live}, this build needs ` +
+      `${expected}). Re-run supabase/schema.sql. Until you do, saved values ` +
+      `can be rejected by old validation rules.`;
+    return;
+  }
+
+  el.className = "db-version db-version--ok";
+  el.textContent = `Database schema_version ${live} is up to date.`;
 }
 
 /* -----------------------------------------------------------------------------

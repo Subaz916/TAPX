@@ -435,3 +435,27 @@ textarea.input--code {
     gap: 20px;
   }
 }
+
+/* Database schema freshness. The warning state is what matters: it is how a
+ * database that was never re-run after a schema change becomes visible,
+ * instead of surfacing later as a validation error that looks like bad input. */
+.db-version {
+  margin: 0 0 12px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.db-version--ok {
+  background: rgba(80, 200, 120, 0.08);
+  border-color: rgba(80, 200, 120, 0.28);
+  color: rgba(150, 235, 185, 0.95);
+}
+
+.db-version--warn {
+  background: rgba(255, 176, 60, 0.1);
+  border-color: rgba(255, 176, 60, 0.34);
+  color: rgba(255, 208, 130, 0.95);
+}

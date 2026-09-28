@@ -141,13 +141,14 @@ Five containers, in page order. Each loads **once per page view**.
 | --- | --- | --- |
 | `top` | `#ad-top` | Directly under the XP card |
 | `stats` | `#ad-stats` | Directly under the stats strip, above the XP bar |
-| `between` | `#ad-between` | Between the daily reward card and the tap button |
-| `inline` | `#ad-inline` | In-content unit below the tap area |
+| `between` | `#ad-between` | After the tap area, above the disclaimer |
+| `inline` | `#ad-inline` | After the disclaimer, above the bottom slot |
 | `bottom` | `#ad-bottom` | Above the bottom navigation |
 
 Each container starts with the `hidden` attribute, so a disabled placement never
-reserves blank space. The tap button sits between the daily reward card and
-`#ad-between`, so no unit ever covers it.
+reserves blank space. The real page order is `#ad-stats`, `#ad-top`, the daily
+reward, the tap button, `#ad-between`, `#ad-inline`, `#ad-bottom` - so no unit
+ever lands on top of the tap button.
 
 Paste a different official snippet into any slot to run several formats side by
 side. Adsterra often under-delivers on a single format, so diversifying usually

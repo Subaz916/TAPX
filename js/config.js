@@ -84,6 +84,17 @@ export const CONFIG = Object.freeze({
     recordCooldownMs: 60000
   },
 
+  /* Schema version this frontend expects. supabase/schema.sql writes the same
+   * number into app_settings.schema_version, so the admin panel can detect a
+   * database whose function definitions, grants or policies are older than
+   * this build. Bump it whenever schema.sql changes.
+   *
+   * This is the check that catches the confusing case where seed.sql has
+   * inserted a new row but the validation function that guards it is still an
+   * old version, so saving the row fails with a message that looks like the
+   * input was wrong. */
+  schemaVersion: 5,
+
   /* Optional overrides. Leave null to use the defaults. */
   supportEmail: null,
   privacyUrl: "privacy.html",

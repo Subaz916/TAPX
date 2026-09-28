@@ -59,6 +59,8 @@ const MAX_CODE_LENGTH = 20000;
 
 const state = {
   enabled: false,
+  master: false,
+  local: false,
   placements: [],
   maintenance: false
 };
@@ -103,6 +105,8 @@ async function init() {
   // the "ads_enabled" app setting, toggled from the admin panel, so the owner
   // never has to edit a file to turn ads on or off.
   state.enabled = Boolean(CONFIG.ads.enabled);
+  state.local = Boolean(CONFIG.ads.enabled);
+  state.master = false;
   state.maintenance = false;
 
   let config = null;
@@ -116,6 +120,7 @@ async function init() {
 
   applyConfig(config);
   state.placements.forEach(registerPlacement);
+  report();
 
   on("config:refresh", (e) => {
     // Re-read the config, but never re-inject: an injected placement is frozen
@@ -129,8 +134,57 @@ function applyConfig(config) {
   if (!config || typeof config !== "object") return;
   if (Array.isArray(config.placements)) state.placements = config.placements;
   state.maintenance = config?.settings?.maintenance_mode === true;
-  state.enabled =
-    Boolean(CONFIG.ads.enabled) && config?.settings?.ads_enabled === true;
+  state.master = config?.settings?.ads_enabled === true;
+  state.enabled = state.local && state.master;
+}
+
+/* -----------------------------------------------------------------------------
+ * Diagnostic report
+ * --------------------------------------------------------------------------
+ * A placement that is switched off in the database is filtered out by
+ * get_public_config() (`where enabled`) and therefore never reaches this module
+ * at all. That is a completely silent failure: the container just stays hidden
+ * and nothing appears in the console. This report names the reason for every
+ * location so the cause is readable without adding visible debug UI.
+ * ------------------------------------------------------------------------- */
+function report() {
+  const byLocation = new Map(state.placements.map((p) => [p.location, p]));
+
+  const lines = [
+    `[ads] local kill switch CONFIG.ads.enabled = ${state.local}`,
+    `[ads] remote master switch ads_enabled = ${state.master}`,
+    `[ads] global state = ${state.enabled ? "ON" : "OFF"}`
+  ];
+
+  for (const [location, selector] of Object.entries(LOCATION_TO_CONTAINER)) {
+    const placement = byLocation.get(location);
+    const host = $(selector);
+    const seen = injected.has(placement?.slug);
+
+    if (!placement) {
+      lines.push(
+        `[ads] ${location} (${selector}): NOT DELIVERED - the database row is ` +
+          `missing or still disabled. It is only sent when enabled = true.`
+      );
+      continue;
+    }
+
+    const len = typeof placement.code === "string" ? placement.code.trim().length : 0;
+    const verdict = seen
+      ? "injected"
+      : !state.enabled
+        ? `hidden - global switch is OFF`
+        : len === 0
+          ? "visible placeholder - no snippet saved yet"
+          : "enabled, snippet pending";
+
+    lines.push(`[ads] ${location} (${selector}): ${verdict} [code ${len} chars]`);
+    if (host?.classList.contains("is-error")) {
+      lines.push(`[ads] ${location}: render error - see the warning above`);
+    }
+  }
+
+  console.log(lines.join("\n"));
 }
 
 /**
